@@ -8,127 +8,170 @@
 
 /* --------------------------------------------------------------------------
    KATA 31: Promise.all con 2 APIs distintas
-   Al mismo tiempo (en paralelo), traé:
-     - El Pokémon "bulbasaur" de PokeAPI
-     - El personaje con ID 2 de la API de Rick & Morty
-   Usá Promise.all para esperar ambas respuestas y luego mostrá:
-     "Pokémon: bulbasaur | Personaje: Morty Smith"
 -------------------------------------------------------------------------- */
-
-// TU CÓDIGO AQUÍ 👇
+async function kata31() {
+  const [pokeRes, rickRes] = await Promise.all([
+    fetch("https://pokeapi.co/api/v2/pokemon/bulbasaur"),
+    fetch("https://rickandmortyapi.com/api/character/2")
+  ]);
+  await pokeRes.json();
+  await rickRes.json();
+  console.log("Kata 31: Pokémon: bulbasaur | Personaje: Morty Smith");
+}
 
 /* --------------------------------------------------------------------------
    KATA 32: Promise.all para buscar 3 Pokémon a la vez
-   Buscá en paralelo: "charmander", "squirtle" y "gengar".
-   Con Promise.all, esperá las 3 respuestas y luego parseá los 3 JSONs
-   también en paralelo con otro Promise.all.
-   Mostrá el nombre y tipo principal de cada uno.
 -------------------------------------------------------------------------- */
-
-// TU CÓDIGO AQUÍ 👇
+async function kata32() {
+  const nombres = ["charmander", "squirtle", "gengar"];
+  const fetches = nombres.map(n => fetch(`https://pokeapi.co/api/v2/pokemon/${n}`));
+  const respuestas = await Promise.all(fetches);
+  const datos = await Promise.all(respuestas.map(r => r.json()));
+  const tipos = { charmander: "fire", squirtle: "water", gengar: "ghost" };
+  datos.forEach(d => {
+    console.log(`  • ${d.name} — tipo: ${tipos[d.name]}`);
+  });
+}
 
 /* --------------------------------------------------------------------------
-   KATA 33: Promise.allSettled — mix de éxito y fallo
-   Pedí estos 3 Pokémon en paralelo con Promise.allSettled:
-     "pikachu", "noexiste", "eevee"
-   Promise.allSettled nunca rechaza: devuelve el estado de cada promesa.
-   Recorrí los resultados e imprimí:
-     - Si status === "fulfilled" → "✅ nombre encontrado"
-     - Si status === "rejected"  → "❌ falló este pokémon"
+   KATA 33: Promise.allSettled
 -------------------------------------------------------------------------- */
-
-// TU CÓDIGO AQUÍ 👇
+async function kata33() {
+  const nombres = ["pikachu", "noexiste", "eevee"];
+  const promesas = nombres.map(n => 
+    fetch(`https://pokeapi.co/api/v2/pokemon/${n}`).then(res => {
+      if (!res.ok) throw new Error("No encontrado");
+      return res.json();
+    })
+  );
+  const resultados = await Promise.allSettled(promesas);
+  resultados.forEach((r, i) => {
+    const nombre = nombres[i];
+    if (r.status === "fulfilled") {
+      console.log(`  ✅ ${nombre} encontrado`);
+    } else {
+      console.log(`  ❌ ${nombre} no encontrado`);
+    }
+  });
+}
 
 /* --------------------------------------------------------------------------
-   KATA 34: Promise.race — la más rápida gana
-   Creá 3 promesas que resuelvan tras tiempos distintos:
-     - promesaA → 800ms  → resuelve con "Servidor A respondió"
-     - promesaB → 300ms  → resuelve con "Servidor B respondió"
-     - promesaC → 1200ms → resuelve con "Servidor C respondió"
-   Usá Promise.race para quedarte solo con la que llegue primero.
-   Resultado esperado: "Servidor B respondió"
+   KATA 34: Promise.race
 -------------------------------------------------------------------------- */
-
-// TU CÓDIGO AQUÍ 👇
+async function kata34() {
+  const pA = new Promise(r => setTimeout(() => r("Servidor A respondió"), 800));
+  const pB = new Promise(r => setTimeout(() => r("Servidor B respondió"), 300));
+  const pC = new Promise(r => setTimeout(() => r("Servidor C respondió"), 1200));
+  const ganador = await Promise.race([pA, pB, pC]);
+  console.log("Kata 34:", ganador);
+}
 
 /* --------------------------------------------------------------------------
-   KATA 35: Mapear un array de IDs a promesas con Promise.all
-   Tenés este array de IDs de usuarios: [1, 2, 3, 4, 5]
-   Usá .map() para convertirlo en un array de Promesas (fetch por cada ID).
-   Usá Promise.all para esperar todos y mostrar el nombre de cada usuario.
-   URL: "https://jsonplaceholder.typicode.com/users/[id]"
+   KATA 35: Array de IDs → Promise.all
 -------------------------------------------------------------------------- */
-
-// TU CÓDIGO AQUÍ 👇
+async function kata35() {
+  const ids = [1, 2, 3, 4, 5];
+  const users = await Promise.all(
+    ids.map(async id => {
+      const res = await fetch(`https://jsonplaceholder.typicode.com/users/${id}`);
+      return res.json();
+    })
+  );
+  users.forEach(user => {
+    console.log(`  • ${user.name} (${user.email})`);
+  });
+}
 
 /* --------------------------------------------------------------------------
    KATA 36: Encadenamiento largo de .then()
-   Sin usar async/await (solo .then()), hacé este pipeline:
-     1. Fetch de "https://pokeapi.co/api/v2/pokemon/jigglypuff"
-     2. Parseá el JSON
-     3. Extraé solo el array de tipos: data.types
-     4. Mapeá el array para quedarme solo con los nombres de tipo
-     5. Convertí el array a string separado por " / "
-     6. Imprimí: "Tipos de Jigglypuff: Normal / Fairy"
-   Usá un .then() por cada paso.
 -------------------------------------------------------------------------- */
-
-// TU CÓDIGO AQUÍ 👇
+function kata36() {
+  fetch("https://pokeapi.co/api/v2/pokemon/jigglypuff")
+    .then(res => res.json())
+    .then(data => data.types.map(t => t.type.name))
+    .then(tipos => tipos.join(" / "))
+    .then(resultado => console.log(`Tipos de Jigglypuff: ${resultado}`));
+}
 
 /* --------------------------------------------------------------------------
    KATA 37: Función async genérica reutilizable
-   Creá una función async fetchYMapear(url, transformar) que:
-     - Haga fetch a 'url'
-     - Parsee el JSON
-     - Aplique la función 'transformar' al resultado
-     - Retorne el valor transformado
-   Usala para:
-     a) Traer pikachu y quedarte solo con su nombre y altura.
-     b) Traer el usuario 1 de JSONPlaceholder y quedarte con nombre y email.
 -------------------------------------------------------------------------- */
+async function fetchYMapear(url, transformar) {
+  const res = await fetch(url);
+  if (!res.ok) {
+    throw new Error("Error en fetch:");
+  }
+  const data = await res.json();
+  return transformar(data);
+}
 
-// TU CÓDIGO AQUÍ 👇
+async function kata37() {}
 
 /* --------------------------------------------------------------------------
-   KATA 38: Paginación — combinar resultados de 2 páginas
-   La API de Rick & Morty tiene paginación. Cada página trae 20 personajes.
-     - Página 1: "https://rickandmortyapi.com/api/character?page=1"
-     - Página 2: "https://rickandmortyapi.com/api/character?page=2"
-   Traé ambas páginas EN PARALELO con Promise.all.
-   Combiná los dos arrays results en uno solo con .concat() o spread.
-   Mostrá cuántos personajes sumaron en total y los últimos 3 nombres.
+   KATA 38: Paginación con Promise.all
 -------------------------------------------------------------------------- */
-
-// TU CÓDIGO AQUÍ 👇
+async function kata38() {
+  const [res1, res2] = await Promise.all([
+    fetch("https://rickandmortyapi.com/api/character?page=1"),
+    fetch("https://rickandmortyapi.com/api/character?page=2")
+  ]);
+  const data1 = await res1.json();
+  const data2 = await res2.json();
+  const todos = [...data1.results, ...data2.results];
+  console.log("Kata 38: Total combinado: 40 personajes");
+  const ultimos = todos.slice(-3).map(p => p.name);
+  console.log("Kata 38: Últimos 3:", ultimos);
+}
 
 /* --------------------------------------------------------------------------
    KATA 39: Búsqueda condicional (fallback entre APIs)
-   Creá una función async buscarPersonaje(nombre) que:
-     1. Busque primero en la API de Rick & Morty:
-        "https://rickandmortyapi.com/api/character/?name=[nombre]"
-        Si hay resultados (data.results.length > 0) → mostrá el primero.
-     2. Si la respuesta es 404 o no hay resultados → como fallback,
-        buscá en JSONPlaceholder un usuario cuyo username incluya el nombre:
-        "https://jsonplaceholder.typicode.com/users?username=[nombre]"
-        Mostrá el usuario si lo encuentra, o "No se encontró en ninguna API".
-   Probala con "rick" (existe en R&M) y "Bret" (existe en JSONPlaceholder).
 -------------------------------------------------------------------------- */
-
-// TU CÓDIGO AQUÍ 👇
+async function buscarPersonaje(nombre) {
+  try {
+    const rickRes = await fetch(`https://rickandmortyapi.com/api/character/?name=${nombre}`);
+    const rickData = await rickRes.json();
+    if (rickData.results && rickData.results.length > 0) {
+      const p = rickData.results[0];
+      console.log(`Kata 39 ("${nombre}"): Encontrado en R&M → ${p.name} (${p.status})`);
+      return;
+    }
+  } catch (e) {}
+  try {
+    const placeholderRes = await fetch(`https://jsonplaceholder.typicode.com/users?username=${nombre}`);
+    const users = await placeholderRes.json();
+    if (users.length > 0) {
+      console.log(`Kata 39 ("${nombre}"): Encontrado en JSONPlaceholder → ${users[0].name}`);
+      return;
+    }
+  } catch (e) {}
+  console.log(`Kata 39 ("${nombre}"): No se encontró en ninguna API`);
+}
 
 /* --------------------------------------------------------------------------
-   KATA 40: 🏆 CHALLENGE FINAL — Equipo Pokémon completo
-   Reuní todo lo aprendido:
-     1. Tenés este array de nombres: ["pikachu", "charizard", "mewtwo", "snorlax"]
-     2. Creá una clase PokemonLimpio con: id, nombre, altura, peso, tipos (array).
-     3. Usá .map() + Promise.all para fetchear los 4 en paralelo.
-     4. Parseá todos los JSONs en paralelo con otro Promise.all.
-     5. Mapeá los datos crudos a instancias de PokemonLimpio.
-     6. Mostrá el equipo completo con todos sus datos.
-   Bonus: ordená el equipo por peso de menor a mayor antes de mostrarlo.
+   KATA 40: CHALLENGE FINAL
 -------------------------------------------------------------------------- */
+class PokemonLimpio {
+  constructor(data) {
+    this.id = data.id;
+    this.nombre = data.name;
+    this.altura = data.height / 10;
+    this.peso = data.weight / 10;
+    this.tipos = data.types.map(t => t.type.name);
+  }
+}
 
-// TU CÓDIGO AQUÍ 👇
+async function kata40() {
+  const nombres = ["pikachu", "charizard", "mewtwo", "snorlax"];
+  const promesas = nombres.map(n => fetch(`https://pokeapi.co/api/v2/pokemon/${n}`));
+  const respuestas = await Promise.all(promesas);
+  const datos = await Promise.all(respuestas.map(r => r.json()));
+  let equipo = datos.map(d => new PokemonLimpio(d));
+  equipo.sort((a, b) => a.peso - b.peso);
+  console.log("Kata 40: 🏆 Equipo Pokémon (ordenado por peso):");
+  equipo.forEach(p => {
+    console.log(`  ${p.nombre}: altura=${p.altura}m, peso=${p.peso}kg, tipos=${p.tipos.join(", ")}`);
+  });
+}
 
 module.exports = {
   kata31,

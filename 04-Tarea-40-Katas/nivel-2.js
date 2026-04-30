@@ -12,6 +12,10 @@
 -------------------------------------------------------------------------- */
 
 // TU CÓDIGO AQUÍ 👇
+async function esperarMensaje() {
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+  console.log("Kata 11: ¡Hola desde async/await!");
+}
 
 /* --------------------------------------------------------------------------
    KATA 12: Retornar un valor de forma asíncrona
@@ -21,6 +25,13 @@
 -------------------------------------------------------------------------- */
 
 // TU CÓDIGO AQUÍ 👇
+async function obtenerSaludo(nombre) {
+  await new Promise((resolve) => setTimeout(resolve, 500));
+  return `Hola, ${nombre}!`;
+}
+
+// (No llamamos a console.log aquí porque la kata solo pide definir la función.
+// La impresión la hará quien invoque la función, por ejemplo en los tests.)
 
 /* --------------------------------------------------------------------------
    KATA 13: Manejo de errores en funciones asíncronas
@@ -44,6 +55,14 @@ function loginSimulado(usuario, password) {
 }
 
 // TU CÓDIGO AQUÍ 👇
+async function probarLogin(usuario, pass) {
+  try {
+    const data = await loginSimulado(usuario, pass);
+    console.log(`Bienvenido, ${data.nombre}`);
+  } catch (error) {
+    console.log(`Error de acceso: ${error}`);
+  }
+}
 
 /* --------------------------------------------------------------------------
    KATA 14: Funciones asíncronas que se llaman entre sí
@@ -55,6 +74,21 @@ function loginSimulado(usuario, password) {
 -------------------------------------------------------------------------- */
 
 // TU CÓDIGO AQUÍ 👇
+async function obtenerIdUsuario() {
+  await new Promise((resolve) => setTimeout(resolve, 300));
+  return 42;
+}
+
+async function obtenerPerfil(id) {
+  await new Promise((resolve) => setTimeout(resolve, 300));
+  return { id, nombre: "Lucas" };
+}
+
+async function cargarPantalla() {
+  const id = await obtenerIdUsuario();
+  const perfil = await obtenerPerfil(id);
+  console.log(perfil);
+}
 
 /* --------------------------------------------------------------------------
    KATA 15: delay() reutilizable
@@ -65,6 +99,17 @@ function loginSimulado(usuario, password) {
 -------------------------------------------------------------------------- */
 
 // TU CÓDIGO AQUÍ 👇
+function delay(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function contarHasta3() {
+  console.log("1...");
+  await delay(500);
+  console.log("2...");
+  await delay(500);
+  console.log("3... ¡Ya!");
+}
 
 /* --------------------------------------------------------------------------
    KATA 16: Carga de usuario con manejo de error
@@ -78,6 +123,23 @@ function loginSimulado(usuario, password) {
 -------------------------------------------------------------------------- */
 
 // TU CÓDIGO AQUÍ 👇
+async function buscarUsuario(id) {
+  await new Promise((resolve) => setTimeout(resolve, 600));
+  if (id === 1 || id === 2 || id === 3) {
+    return { id, nombre: `Usuario ${id}` };
+  } else {
+    throw new Error("Usuario no encontrado");
+  }
+}
+
+async function mostrarUsuario(id) {
+  try {
+    const usuario = await buscarUsuario(id);
+    console.log(usuario);
+  } catch (error) {
+    console.log(error.message);
+  }
+}
 
 /* --------------------------------------------------------------------------
    KATA 17: Proceso de compra en pasos
@@ -91,6 +153,29 @@ function loginSimulado(usuario, password) {
 -------------------------------------------------------------------------- */
 
 // TU CÓDIGO AQUÍ 👇
+async function validarStock(producto) {
+  await delay(400);
+  return `Stock OK para ${producto}`;
+}
+
+async function procesarPago(monto) {
+  await delay(600);
+  return `Pago de $${monto} aprobado`;
+}
+
+async function enviarConfirmacion() {
+  await delay(300);
+  return "Email de confirmación enviado";
+}
+
+async function realizarCompra(producto, monto) {
+  const resultado1 = await validarStock(producto);
+  console.log(resultado1);
+  const resultado2 = await procesarPago(monto);
+  console.log(resultado2);
+  const resultado3 = await enviarConfirmacion();
+  console.log(resultado3);
+}
 
 /* --------------------------------------------------------------------------
    KATA 18: Capturar el valor de retorno
@@ -101,6 +186,12 @@ function loginSimulado(usuario, password) {
 -------------------------------------------------------------------------- */
 
 // TU CÓDIGO AQUÍ 👇
+async function calcularDescuento(precio, porcentaje) {
+  await delay(200);
+  return precio - (precio * porcentaje) / 100;
+}
+
+// La impresión se hará en los tests o manualmente. No la incluimos aquí.
 
 /* --------------------------------------------------------------------------
    KATA 19: Múltiples pasos dependientes
@@ -113,6 +204,27 @@ function loginSimulado(usuario, password) {
 -------------------------------------------------------------------------- */
 
 // TU CÓDIGO AQUÍ 👇
+async function obtenerDatos() {
+  await delay(300);
+  return [10, 20, 30, 40];
+}
+
+async function sumarArray(arr) {
+  await delay(300);
+  return arr.reduce((acc, n) => acc + n, 0);
+}
+
+async function calcularMedia(arr, total) {
+  await delay(300);
+  return total / arr.length;
+}
+
+async function generarReporte() {
+  const datos = await obtenerDatos();
+  const total = await sumarArray(datos);
+  const media = await calcularMedia(datos, total);
+  console.log(`Total: ${total} | Promedio: ${media}`);
+}
 
 /* --------------------------------------------------------------------------
    KATA 20: Reintento automático
@@ -125,6 +237,30 @@ function loginSimulado(usuario, password) {
 -------------------------------------------------------------------------- */
 
 // TU CÓDIGO AQUÍ 👇
+function inestable() {
+  // ⚠️ Sin setTimeout, resuelve o rechaza de forma síncrona/inmediata
+  const random = Math.random();
+  if (random > 0.7) {
+    return Promise.resolve("¡Éxito!");
+  } else {
+    return Promise.reject("Falló el intento");
+  }
+}
+
+async function conReintento(intentosMaximos) {
+  for (let i = 1; i <= intentosMaximos; i++) {
+    try {
+      const resultado = await inestable();
+      console.log(`Kata 20: Intento ${i} → ${resultado}`);
+      return; // éxito, termina
+    } catch (error) {
+      console.log(`Kata 20: Intento ${i} → ${error}`);
+      if (i === intentosMaximos) {
+        console.log("Kata 20: Se agotaron los intentos ❌");
+      }
+    }
+  }
+}
 
 module.exports = {
   esperarMensaje,
