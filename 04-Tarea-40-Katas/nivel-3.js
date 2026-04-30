@@ -18,6 +18,20 @@
 -------------------------------------------------------------------------- */
 
 // TU CÓDIGO AQUÍ 👇
+async function kata21() {
+  try {
+    const respuesta = await fetch("https://pokeapi.co/api/v2/pokemon/pikachu");
+    const datos = await respuesta.json();
+    console.log("Kata 21:", {
+      nombre: datos.name,
+      id: datos.id,
+      peso: datos.weight
+    });
+  } catch (error) {
+    // No lanzamos excepción, solo manejamos silenciosamente
+    console.error(error);
+  }
+}
 
 /* --------------------------------------------------------------------------
    KATA 22: Manejo del error 404
@@ -30,6 +44,22 @@
 -------------------------------------------------------------------------- */
 
 // TU CÓDIGO AQUÍ 👇
+async function buscarPokemon(nombre) {
+  try {
+    const respuesta = await fetch(`https://pokeapi.co/api/v2/pokemon/${nombre}`);
+    if (!respuesta.ok) {
+      throw new Error(`No existe ningún Pokémon llamado '${nombre}'.`);
+    }
+    const datos = await respuesta.json();
+    console.log(`Kata 22: ${datos.name} (#${datos.id})`);
+  } catch (error) {
+    if (error.message.includes("No existe")) {
+      console.log("Kata 22 ❌:", error.message);
+    } else {
+      console.error(error);
+    }
+  }
+}
 
 /* --------------------------------------------------------------------------
    KATA 23: fetch a Rick & Morty API
@@ -38,6 +68,16 @@
 -------------------------------------------------------------------------- */
 
 // TU CÓDIGO AQUÍ 👇
+async function kata23() {
+  const respuesta = await fetch("https://rickandmortyapi.com/api/character/1");
+  const datos = await respuesta.json();
+  console.log("Kata 23:", {
+    nombre: datos.name,
+    especie: datos.species,
+    estado: datos.status,
+    origen: datos.origin.name
+  });
+}
 
 /* --------------------------------------------------------------------------
    KATA 24: Mapear datos a una clase
@@ -49,6 +89,21 @@
 -------------------------------------------------------------------------- */
 
 // TU CÓDIGO AQUÍ 👇
+class Personaje {
+  constructor(data) {
+    this.nombre = data.name;
+    this.especie = data.species;
+    this.estado = data.status;
+    this.imagen = data.image;
+  }
+}
+
+async function kata24() {
+  const respuesta = await fetch("https://rickandmortyapi.com/api/character/3");
+  const datos = await respuesta.json();
+  const personaje = new Personaje(datos);
+  console.log("Kata 24:", personaje);
+}
 
 /* --------------------------------------------------------------------------
    KATA 25: fetch de una lista
@@ -58,6 +113,14 @@
 -------------------------------------------------------------------------- */
 
 // TU CÓDIGO AQUÍ 👇
+async function kata25() {
+  const respuesta = await fetch("https://jsonplaceholder.typicode.com/posts");
+  const posts = await respuesta.json();
+  const primeros5 = posts.slice(0, 5);
+  primeros5.forEach(post => {
+    console.log(`  #${post.id} - ${post.title}`);
+  });
+}
 
 /* --------------------------------------------------------------------------
    KATA 26: fetch con URL dinámica
@@ -68,6 +131,22 @@
 -------------------------------------------------------------------------- */
 
 // TU CÓDIGO AQUÍ 👇
+async function obtenerUsuario(id) {
+  try {
+    const respuesta = await fetch(`https://jsonplaceholder.typicode.com/users/${id}`);
+    if (!respuesta.ok) {
+      throw new Error("No encontrado");
+    }
+    const user = await respuesta.json();
+    console.log(`Kata 26 (id=${id}):`, {
+      nombre: user.name,
+      email: user.email,
+      ciudad: user.address.city
+    });
+  } catch (error) {
+    console.error("Kata 26 ❌:", `Usuario ${id} no encontrado`);
+  }
+}
 
 /* --------------------------------------------------------------------------
    KATA 27: fetch y filtrar un array
@@ -78,6 +157,15 @@
 -------------------------------------------------------------------------- */
 
 // TU CÓDIGO AQUÍ 👇
+async function kata27() {
+  const respuesta = await fetch("https://rickandmortyapi.com/api/character");
+  const data = await respuesta.json();
+  const vivos = data.results.filter(p => p.status === "Alive");
+  console.log(`Kata 27: ${vivos.length} personajes vivos`);
+  vivos.forEach(p => {
+    console.log(`  🟢 ${p.name}`);
+  });
+}
 
 /* --------------------------------------------------------------------------
    KATA 28: Fetch encadenado (two-step)
@@ -89,6 +177,14 @@
 -------------------------------------------------------------------------- */
 
 // TU CÓDIGO AQUÍ 👇
+async function kata28() {
+  const resPost = await fetch("https://jsonplaceholder.typicode.com/posts/1");
+  const post = await resPost.json();
+  const resUser = await fetch(`https://jsonplaceholder.typicode.com/users/${post.userId}`);
+  const user = await resUser.json();
+  console.log(`  Título: "${post.title}"`);
+  console.log(`  Autor:  ${user.name}`);
+}
 
 /* --------------------------------------------------------------------------
    KATA 29: Buscar Pokémon por tipo
@@ -99,6 +195,12 @@
 -------------------------------------------------------------------------- */
 
 // TU CÓDIGO AQUÍ 👇
+async function kata29() {
+  const respuesta = await fetch("https://pokeapi.co/api/v2/type/fire");
+  const data = await respuesta.json();
+  const primeros8 = data.pokemon.slice(0, 8).map(item => item.pokemon.name);
+  console.log("Kata 29:", primeros8);
+}
 
 /* --------------------------------------------------------------------------
    KATA 30: Mostrar solo campos seleccionados
@@ -110,6 +212,16 @@
 -------------------------------------------------------------------------- */
 
 // TU CÓDIGO AQUÍ 👇
+async function kata30() {
+  const respuesta = await fetch("https://jsonplaceholder.typicode.com/comments?_limit=10");
+  const comentarios = await respuesta.json();
+  const limpios = comentarios.map(c => ({
+    id: c.id,
+    nombre: c.name,
+    email: c.email
+  }));
+  console.log("Kata 30:", limpios);
+}
 
 module.exports = {
   kata21,
